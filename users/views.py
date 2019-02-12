@@ -45,6 +45,7 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+@login_required
 def update_profile(request):
     profile=request.user.profile
     if(request.method=='POST'):
