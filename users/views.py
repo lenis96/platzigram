@@ -12,8 +12,8 @@ from posts.models import Post
 
 from users.forms import ProfileForm,SignupForm
 
-from django.views.generic import DetailView
-from django.urls import reverse
+from django.views.generic import DetailView,FormView,UpdateView
+from django.urls import reverse,reverse_lazy
 
 
 
@@ -29,6 +29,30 @@ class UserDetailView(LoginRequiredMixin,DetailView):
         user=self.get_object()
         context['posts']=Post.objects.filter(user=user).order_by('-created')
         return context
+
+class SignupView(FormView):
+    template_name = 'users/signup.html'
+    form_class = SignupForm
+    success_url = reverse_lazy('users:login')
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+
+class UpdateProfileView(LoginRequiredMixin, UpdateView):
+    template_name = 'users/update_profile.html'
+    model = Profile
+    fields = ['website', 'biography', 'phone_number', 'picture']
+
+    def get_object(self):
+        return self.request.user.profile
+
+    def get_success_url(self):
+        username = self.object.user.username
+        return reverse('users:detail', kwargs={'username': username})
+
+
 
 def login_view(request):
     if(request.method=='POST'):
